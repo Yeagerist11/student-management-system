@@ -23,9 +23,6 @@ A full-featured, responsive Student Management System built with **Django 6.1** 
   - Track active enrollment counts per course.
   - Course deletion with cascade safeguard.
 
-- **🧮 Legacy Calculator Support:**
-  - Preserved and modernized the original tutorial calculator at `/calc/`.
-
 - **🛡️ Django Admin Integration:**
   - Models fully registered in Django Admin with filters, search, and list displays.
 
@@ -53,13 +50,8 @@ Project/
 │   │   ├── tests.py               # Automated unit & integration tests
 │   │   └── management/commands/
 │   │       └── seed_data.py       # Sample data generation command
-│   ├── calc/                      # Calculator app
-│   │   ├── views.py
-│   │   └── urls.py
 │   └── templates/                 # Global templates
 │       ├── base.html              # Responsive Bootstrap 5 base template
-│       ├── home.html              # Calculator interface
-│       ├── result.html            # Calculator result display
 │       └── students/
 │           ├── dashboard.html     # Analytics & KPI overview
 │           ├── student_list.html  # Directory with search & filters
@@ -93,7 +85,6 @@ Project/
    - **Student Directory:** [http://127.0.0.1:8000/students/](http://127.0.0.1:8000/students/)
    - **Courses & Programs:** [http://127.0.0.1:8000/courses/](http://127.0.0.1:8000/courses/)
    - **Django Admin:** [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
-   - **Calculator:** [http://127.0.0.1:8000/calc/](http://127.0.0.1:8000/calc/)
 
 ---
 
