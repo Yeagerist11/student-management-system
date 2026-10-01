@@ -1,4 +1,4 @@
-# EduManage - Student Management System
+# StudentHub - Student Management System
 
 A full-featured, responsive Student Management System built with **Django 6.1** and **Bootstrap 5**.
 

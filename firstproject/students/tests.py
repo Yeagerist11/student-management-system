@@ -62,7 +62,7 @@ class StudentViewTests(TestCase):
     def test_dashboard_view(self):
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "EduManage")
+        self.assertContains(response, "StudentHub")
         self.assertContains(response, "Alice Smith")
         self.assertEqual(response.context['total_students'], 1)
 
