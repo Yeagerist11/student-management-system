@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.full_name }} - Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'student_list' %}" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left me-1"></i> Back to Student Directory
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Summary Sidebar -->
+    <div class="col-lg-4">
+        <div class="card card-custom text-center p-4">
+            <div class="mx-auto mb-3" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold;">
+                {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+            </div>
+            <h4 class="fw-bold mb-1">{{ student.full_name }}</h4>
+            <div class="text-muted small mb-2">{{ student.roll_number }}</div>
+            <div class="mb-3">
+                <span class="badge {{ student.status_badge_class }} badge-status px-3 py-2 fs-6">
+                    {{ student.status }}
+                </span>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="d-grid gap-2">
+                <a href="{% url 'student_update' student.pk %}" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-pencil-square"></i> Edit Profile
+                </a>
+                <a href="{% url 'student_delete' student.pk %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-trash"></i> Delete Student
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Information -->
+    <div class="col-lg-8">
+        <!-- Academic Information Card -->
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-mortarboard-fill"></i> Academic Information
+            </h5>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Program / Course</label>
+                    <p class="fw-bold fs-6 mb-0">
+                        {% if student.course %}
+                            {{ student.course.name }} ({{ student.course.code }})
+                        {% else %}
+                            <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Enrollment Date</label>
+                    <p class="fw-bold fs-6 mb-0">{{ student.enrollment_date|date:"F d, Y" }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Current GPA</label>
+                    <p class="fw-bold fs-4 mb-0 text-primary">{{ student.gpa }} <span class="text-muted fs-6">/ 10.0</span></p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Course Duration</label>
+                    <p class="fw-bold fs-6 mb-0">
+                        {% if student.course %}
+                            {{ student.course.duration_years }} Years
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal & Contact Details Card -->
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-person-lines-fill"></i> Personal & Contact Information
+            </h5>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Email Address</label>
+                    <p class="fw-bold fs-6 mb-0">
+                        <a href="mailto:{{ student.email }}" class="text-decoration-none">
+                            <i class="bi bi-envelope me-1"></i> {{ student.email }}
+                        </a>
+                    </p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Phone Number</label>
+                    <p class="fw-bold fs-6 mb-0">
+                        {% if student.phone %}
+                            <a href="tel:{{ student.phone }}" class="text-decoration-none">
+                                <i class="bi bi-telephone me-1"></i> {{ student.phone }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Date of Birth</label>
+                    <p class="fw-bold fs-6 mb-0">{{ student.date_of_birth|date:"F d, Y" }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Gender</label>
+                    <p class="fw-bold fs-6 mb-0">{{ student.get_gender_display }}</p>
+                </div>
+                <div class="col-12">
+                    <label class="text-muted small text-uppercase fw-semibold">Residential Address</label>
+                    <p class="mb-0 text-secondary">
+                        {{ student.address|linebreaksbr|default:"No address registered." }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

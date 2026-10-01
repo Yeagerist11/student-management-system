@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Academic Courses{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="h3 fw-bold mb-1">Courses & Academic Programs</h2>
+        <p class="text-muted mb-0">Manage degrees, majors, and academic streams for students.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Existing Courses List -->
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title fw-bold mb-0">Registered Programs ({{ courses.count }})</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Code</th>
+                            <th>Course Name</th>
+                            <th>Duration</th>
+                            <th>Enrolled</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-primary">{{ course.code }}</td>
+                            <td>
+                                <div class="fw-semibold">{{ course.name }}</div>
+                                <small class="text-muted">{{ course.description|truncatechars:60|default:"No description" }}</small>
+                            </td>
+                            <td>{{ course.duration_years }} Year{{ course.duration_years|pluralize }}</td>
+                            <td>
+                                <a href="{% url 'student_list' %}?course={{ course.id }}" class="badge bg-primary-subtle text-primary text-decoration-none">
+                                    {{ course.total_students }} Student{{ course.total_students|pluralize }}
+                                </a>
+                            </td>
+                            <td class="text-end pe-3">
+                                <form action="{% url 'course_delete' course.pk %}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete course {{ course.code }}? Students enrolled in this course will have their course unassigned.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Course">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-journal-x fs-1 d-block mb-2"></i>
+                                <h6>No Courses Created Yet</h6>
+                                <p class="small">Use the form on the right to register your first course.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Course Form -->
+    <div class="col-lg-4">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-plus-circle text-primary"></i> Add New Course
+            </h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Course Code <span class="text-danger">*</span></label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                        <div class="text-danger small mt-1">{{ form.code.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Course Name <span class="text-danger">*</span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1">{{ form.name.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Duration (Years) <span class="text-danger">*</span></label>
+                    {{ form.duration_years }}
+                    {% if form.duration_years.errors %}
+                        <div class="text-danger small mt-1">{{ form.duration_years.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i> Create Program
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

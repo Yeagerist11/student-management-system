@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Directory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h3 fw-bold mb-1">Student Directory</h2>
+        <p class="text-muted mb-0">Showing {{ total_count }} student{{ total_count|pluralize }} registered in the system.</p>
+    </div>
+    <a href="{% url 'student_create' %}" class="btn btn-primary d-flex align-items-center gap-2">
+        <i class="bi bi-person-plus-fill"></i>
+        <span>Register New Student</span>
+    </a>
+</div>
+
+<!-- Search & Filters -->
+<div class="card card-custom p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search by name, roll number, or email..." value="{{ query }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="course" class="form-select">
+                <option value="">All Courses</option>
+                {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"i" %}selected{% endif %}>
+                        {{ course.code }} - {{ course.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                {% for status_val, status_name in status_choices %}
+                    <option value="{{ status_val }}" {% if selected_status == status_val %}selected{% endif %}>
+                        {{ status_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+            {% if query or selected_course or selected_status %}
+                <a href="{% url 'student_list' %}" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Table of Students -->
+<div class="card card-custom">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">Roll No.</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>GPA</th>
+                    <th>Status</th>
+                    <th>Admitted</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in page_obj %}
+                <tr>
+                    <td class="ps-3 fw-bold text-primary">
+                        <a href="{% url 'student_detail' student.pk %}" class="text-decoration-none">
+                            {{ student.roll_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">{{ student.full_name }}</div>
+                        <small class="text-muted">{{ student.email }}</small>
+                    </td>
+                    <td>
+                        {% if student.course %}
+                            <span class="badge bg-light text-dark border">{{ student.course.code }}</span>
+                            <small class="text-muted d-block">{{ student.course.name|truncatechars:24 }}</small>
+                        {% else %}
+                            <span class="text-muted small">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold {% if student.gpa >= 3.5 %}text-success{% elif student.gpa >= 2.5 %}text-primary{% else %}text-muted{% endif %}">
+                            {{ student.gpa }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {{ student.status_badge_class }} badge-status">{{ student.status }}</span>
+                    </td>
+                    <td class="text-muted small">
+                        {{ student.enrollment_date|date:"M d, Y" }}
+                    </td>
+                    <td class="text-end pe-3">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline-secondary" title="View details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'student_update' student.pk %}" class="btn btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'student_delete' student.pk %}" class="btn btn-outline-danger" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-search fs-1 d-block mb-2"></i>
+                            <h5 class="fw-bold">No Students Found</h5>
+                            <p class="mb-3">Try adjusting your search criteria or register a new student.</p>
+                            <a href="{% url 'student_create' %}" class="btn btn-primary btn-sm">Add New Student</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <span class="text-muted small">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_course %}&course={{ selected_course }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">&laquo; Prev</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+            {% endif %}
+
+            {% for p in page_obj.paginator.page_range %}
+                {% if page_obj.number == p %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% elif p > page_obj.number|add:'-3' and p < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}{% if query %}&q={{ query }}{% endif %}{% if selected_course %}&course={{ selected_course }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_course %}&course={{ selected_course }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next &raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
