@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom p-4 shadow-sm">
+            <div class="text-center mb-4">
+                <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-2" style="width: 56px; height: 56px;">
+                    <i class="bi bi-mortarboard-fill fs-3"></i>
+                </div>
+                <h3 class="fw-bold mb-1">StudentHub Portal</h3>
+                <p class="text-muted small">Sign in to access your personal dashboard and academic records</p>
+            </div>
+
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Username or Roll Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" id="usernameInput" class="form-control" placeholder="e.g. STU2024001 or admin" required autofocus>
+                    </div>
+                    <div class="form-text small">Students can enter their Roll Number (e.g., STU2024001) or username.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="bi bi-key"></i></span>
+                        <input type="password" name="password" id="passwordInput" class="form-control" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+                    </button>
+                </div>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Demo Credentials Helper -->
+            <div>
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Demo Logins
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary text-start d-flex justify-content-between align-items-center" onclick="fillAndSubmit('STU2024001', 'student123')">
+                        <div>
+                            <strong>Aarav Sharma</strong> (STU2024001)
+                            <div class="small text-muted">CSE • GPA 3.92</div>
+                        </div>
+                        <span class="badge bg-primary">Auto Login &rarr;</span>
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-outline-info text-start d-flex justify-content-between align-items-center" onclick="fillAndSubmit('STU2024002', 'student123')">
+                        <div>
+                            <strong>Priya Nair</strong> (STU2024002)
+                            <div class="small text-muted">Data Science • GPA 3.88</div>
+                        </div>
+                        <span class="badge bg-info text-dark">Auto Login &rarr;</span>
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center" onclick="fillAndSubmit('admin', 'admin123')">
+                        <div>
+                            <strong>Staff / Administrator</strong> (admin)
+                            <div class="small text-muted">Institutional overview & management</div>
+                        </div>
+                        <span class="badge bg-secondary">Auto Login &rarr;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fillAndSubmit(user, pass) {
+    document.getElementById('usernameInput').value = user;
+    document.getElementById('passwordInput').value = pass;
+    document.getElementById('loginForm').submit();
+}
+</script>
+{% endblock %}

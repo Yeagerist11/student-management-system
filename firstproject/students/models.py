@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class Course(models.Model):
@@ -34,6 +35,14 @@ class Student(models.Model):
         ('Suspended', 'Suspended'),
     ]
 
+    user = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='student_profile',
+        help_text="Associated login account for student portal access"
+    )
     roll_number = models.CharField(
         max_length=20,
         unique=True,
@@ -83,3 +92,38 @@ class Student(models.Model):
             'Suspended': 'bg-danger',
         }
         return badge_map.get(self.status, 'bg-info')
+
+    @property
+    def academic_standing(self):
+        val = float(self.gpa)
+        if val >= 3.7:
+            return "First Class with Distinction"
+        elif val >= 3.0:
+            return "First Class"
+        elif val >= 2.0:
+            return "Second Class"
+        return "Academic Warning"
+
+    @property
+    def gpa_scale_max(self):
+        return 4.0 if float(self.gpa) <= 4.0 else 10.0
+
+    @property
+    def gpa_percentage(self):
+        max_scale = self.gpa_scale_max
+        return min(100, max(0, int((float(self.gpa) / max_scale) * 100)))
+
+    @property
+    def expected_graduation_year(self):
+        duration = self.course.duration_years if self.course else 4
+        return self.enrollment_date.year + duration
+
+    @property
+    def degree_progress_percentage(self):
+        if self.status == 'Graduated':
+            return 100
+        total_years = self.course.duration_years if self.course else 4
+        years_passed = max(0, timezone.now().date().year - self.enrollment_date.year)
+        progress = int(((years_passed + 1) / max(1, total_years)) * 100)
+        return min(95, max(25, progress))
+

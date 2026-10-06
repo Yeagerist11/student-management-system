@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}My Student Dashboard - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<!-- Student Welcome Banner -->
+<div class="card card-custom p-4 mb-4" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white;">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;" class="shadow-sm">
+                {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h2 class="h3 fw-bold mb-0 text-white">{{ student.full_name }}</h2>
+                    <span class="badge {{ student.status_badge_class }} badge-status">{{ student.status }}</span>
+                </div>
+                <div class="text-light opacity-75 small">
+                    <span class="me-3"><i class="bi bi-person-badge me-1"></i> Roll No: <strong>{{ student.roll_number }}</strong></span>
+                    {% if student.course %}
+                        <span><i class="bi bi-mortarboard me-1"></i> {{ student.course.name }} ({{ student.course.code }})</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editContactModal">
+                <i class="bi bi-pencil-square me-1"></i> Update Contact Info
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Print Summary
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Statistics Grid (Only for Logged-In Student) -->
+<div class="row g-3 mb-4">
+    <!-- Stat 1: Current Cumulative GPA -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card card-custom p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">My Cumulative GPA</span>
+                <div class="stat-icon bg-primary-subtle text-primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                    <i class="bi bi-award-fill"></i>
+                </div>
+            </div>
+            <div class="d-flex align-items-baseline gap-1">
+                <h2 class="fw-bold text-primary mb-0">{{ student.gpa }}</h2>
+                <span class="text-muted small">/ {{ student.gpa_scale_max }}</span>
+            </div>
+            <div class="mt-2">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ student.gpa_percentage }}%;" aria-valuenow="{{ student.gpa_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="mt-2 small text-success fw-semibold">
+                <i class="bi bi-check-circle me-1"></i> {{ student.academic_standing }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 2: Degree Progress -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card card-custom p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Degree Progress</span>
+                <div class="stat-icon bg-success-subtle text-success" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                    <i class="bi bi-pie-chart-fill"></i>
+                </div>
+            </div>
+            <div class="d-flex align-items-baseline gap-1">
+                <h2 class="fw-bold text-success mb-0">{{ student.degree_progress_percentage }}%</h2>
+                <span class="text-muted small">completed</span>
+            </div>
+            <div class="mt-2">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ student.degree_progress_percentage }}%;" aria-valuenow="{{ student.degree_progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="mt-2 small text-muted">
+                Class of <strong>{{ student.expected_graduation_year }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 3: Enrolled Program -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card card-custom p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">My Program</span>
+                <div class="stat-icon bg-info-subtle text-info" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+            </div>
+            {% if course %}
+                <h4 class="fw-bold mb-0 text-dark">{{ course.code }}</h4>
+                <div class="small text-muted text-truncate">{{ course.name }}</div>
+                <div class="mt-3 small text-muted">
+                    <i class="bi bi-clock-history me-1"></i> {{ course.duration_years }}-Year Program
+                </div>
+            {% else %}
+                <h5 class="fw-bold mb-0 text-muted">Unassigned</h5>
+                <div class="mt-3 small text-muted">Awaiting enrollment</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stat 4: Performance Benchmark vs Course -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card card-custom p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Class Benchmark</span>
+                <div class="stat-icon bg-warning-subtle text-warning" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+            <div class="d-flex align-items-baseline gap-1">
+                <h3 class="fw-bold mb-0 {% if gpa_difference >= 0 %}text-success{% else %}text-warning{% endif %}">
+                    {% if gpa_difference >= 0 %}+{{ gpa_difference }}{% else %}{{ gpa_difference }}{% endif %}
+                </h3>
+                <span class="text-muted small">vs class avg</span>
+            </div>
+            <div class="mt-2 small text-muted">
+                Class Average: <strong>{{ course_avg_gpa }}</strong>
+            </div>
+            <div class="mt-1 small">
+                {% if gpa_difference >= 0 %}
+                    <span class="badge bg-success-subtle text-success">Above Average</span>
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning">Consistent Pace</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Student Information & Program Details -->
+<div class="row g-4">
+    <!-- Left Column: Personal Profile & Academic Standing -->
+    <div class="col-lg-7">
+        <!-- Academic Summary Card -->
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-mortarboard-fill"></i> My Academic Status
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted py-2" style="width: 35%;">Enrollment ID:</td>
+                            <td class="fw-bold py-2">{{ student.roll_number }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Department / Degree:</td>
+                            <td class="fw-bold py-2">
+                                {% if course %}
+                                    {{ course.name }} ({{ course.code }})
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Admission Date:</td>
+                            <td class="py-2">{{ student.enrollment_date|date:"F d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Enrollment Status:</td>
+                            <td class="py-2">
+                                <span class="badge {{ student.status_badge_class }} badge-status">{{ student.status }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Cumulative Score:</td>
+                            <td class="py-2">
+                                <span class="fw-bold text-primary">{{ student.gpa }}</span>
+                                <span class="text-muted small">({{ student.academic_standing }})</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Degree Duration:</td>
+                            <td class="py-2">{{ course.duration_years|default:4 }} Academic Years (Graduating {{ student.expected_graduation_year }})</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Personal & Contact Information Card -->
+        <div class="card card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                    <i class="bi bi-person-lines-fill"></i> My Profile & Contact Information
+                </h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editContactModal">
+                    <i class="bi bi-pencil me-1"></i> Edit Details
+                </button>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Email Address</label>
+                    <p class="fw-semibold mb-0 text-dark">{{ student.email }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Phone Number</label>
+                    <p class="fw-semibold mb-0 text-dark">{{ student.phone|default:"Not provided" }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Date of Birth</label>
+                    <p class="fw-semibold mb-0 text-dark">{{ student.date_of_birth|date:"F d, Y" }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <label class="text-muted small text-uppercase fw-semibold">Gender</label>
+                    <p class="fw-semibold mb-0 text-dark">{{ student.get_gender_display }}</p>
+                </div>
+                <div class="col-12">
+                    <label class="text-muted small text-uppercase fw-semibold">Residential Address</label>
+                    <p class="text-secondary mb-0">{{ student.address|linebreaksbr|default:"No residential address recorded." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Program Curriculum & Class Peers -->
+    <div class="col-lg-5">
+        <!-- Course Curriculum Overview -->
+        {% if course %}
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-2 text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-book-half"></i> Curriculum Overview
+            </h5>
+            <p class="small text-muted mb-3">{{ course.description|default:"Detailed syllabus and curriculum information are managed by the department administration." }}</p>
+            <div class="bg-light p-3 rounded-3 small">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Program Code:</span>
+                    <span class="fw-bold">{{ course.code }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Total Class Enrollment:</span>
+                    <span class="fw-bold text-primary">{{ course_student_count }} Students</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Program Duration:</span>
+                    <span class="fw-bold">{{ course.duration_years }} Years</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Class Peers (Privacy-Preserved) -->
+        <div class="card card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                    <i class="bi bi-people-fill"></i> Classmate Peers
+                </h5>
+                <span class="badge bg-light text-muted border">{{ course_peers|length }} peers</span>
+            </div>
+            <p class="small text-muted mb-3">Students studying in your batch ({{ course.code|default:"Course" }}):</p>
+            <ul class="list-group list-group-flush">
+                {% for peer in course_peers %}
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">
+                            {{ peer.first_name|slice:":1" }}{{ peer.last_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <span class="fw-semibold small">{{ peer.full_name }}</span>
+                            <div class="text-muted" style="font-size: 0.75rem;">Roll: {{ peer.roll_number }}</div>
+                        </div>
+                    </div>
+                    <span class="badge {{ peer.status_badge_class }} badge-status" style="font-size: 0.7rem;">{{ peer.status }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item px-0 text-center text-muted small py-3">
+                    No other classmates enrolled in this program yet.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Update Contact Info -->
+<div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editContactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="editContactModalLabel">Update Contact Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">
+                        Keep your contact records up to date. (Academic fields such as GPA and Roll Number can only be updated by the administration).
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                        {{ profile_form.email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        {{ profile_form.phone }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Residential Address</label>
+                        {{ profile_form.address }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

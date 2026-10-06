@@ -172,12 +172,47 @@ class Command(BaseCommand):
             },
         ]
 
+        from django.contrib.auth.models import User
+
+        # Ensure admin user exists
+        admin_user, admin_created = User.objects.get_or_create(
+            username='admin',
+            defaults={'email': 'admin@campus.edu', 'is_staff': True, 'is_superuser': True}
+        )
+        admin_user.set_password('admin123')
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.save()
+        self.stdout.write("Configured Admin user: admin / admin123")
+
         for s in students_data:
+            username = s["roll_number"].lower()
+            user, u_created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    'email': s["email"],
+                    'first_name': s["first_name"],
+                    'last_name': s["last_name"],
+                }
+            )
+            user.set_password('student123')
+            user.first_name = s["first_name"]
+            user.last_name = s["last_name"]
+            user.email = s["email"]
+            user.save()
+
             student, created = Student.objects.get_or_create(
                 roll_number=s["roll_number"],
                 defaults=s
             )
-            if created:
-                self.stdout.write(f"Created Student: {student.roll_number} - {student.full_name}")
+            if not student.user and not Student.objects.filter(user=user).exists():
+                student.user = user
+                student.save()
 
-        self.stdout.write(self.style.SUCCESS("Successfully seeded sample data!"))
+            if created:
+                self.stdout.write(f"Created Student: {student.roll_number} - {student.full_name} (User: {username})")
+            else:
+                self.stdout.write(f"Linked Student: {student.roll_number} -> User: {username}")
+
+        self.stdout.write(self.style.SUCCESS("Successfully seeded sample data and student login accounts!"))
+

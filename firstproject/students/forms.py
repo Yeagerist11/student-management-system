@@ -51,3 +51,15 @@ class CourseForm(forms.ModelForm):
             'duration_years': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 6}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Brief course overview...'}),
         }
+
+
+class StudentProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['email', 'phone', 'address']
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'student@campus.edu'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+1 (555) 000-0000'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Residential address'}),
+        }
+
