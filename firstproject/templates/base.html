@@ -96,68 +96,89 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-                    {% if user.is_authenticated %}
-                        {% if user.is_staff or user.is_superuser %}
-                            <!-- Staff / Admin Navigation -->
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                                    <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if 'student' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_create' and request.resolver_match.url_name != 'student_dashboard' %}active{% endif %}" href="{% url 'student_list' %}">
-                                    <i class="bi bi-people-fill me-1"></i> Students
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if 'course' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'course_list' %}">
-                                    <i class="bi bi-journal-bookmark-fill me-1"></i> Courses
-                                </a>
-                            </li>
-                        {% else %}
-                            <!-- Student Navigation (Personal Portal only) -->
-                            <li class="nav-item">
-                                <a class="nav-link active" href="{% url 'student_dashboard' %}">
-                                    <i class="bi bi-mortarboard me-1"></i> My Dashboard
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endif %}
+                     {% if user.is_authenticated %}
+                         {% if user.is_staff or user.is_superuser %}
+                             <!-- Staff / Admin Navigation -->
+                             <li class="nav-item">
+                                 <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                     <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                                 </a>
+                             </li>
+                             <li class="nav-item">
+                                 <a class="nav-link {% if 'student' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_create' and request.resolver_match.url_name != 'student_dashboard' %}active{% endif %}" href="{% url 'student_list' %}">
+                                     <i class="bi bi-people-fill me-1"></i> Students
+                                 </a>
+                             </li>
+                             <li class="nav-item">
+                                 <a class="nav-link {% if 'course' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'course_list' %}">
+                                     <i class="bi bi-journal-bookmark-fill me-1"></i> Courses
+                                 </a>
+                             </li>
+                             <li class="nav-item">
+                                 <a class="nav-link {% if 'parent' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'parent_dashboard' %}">
+                                     <i class="bi bi-heart-fill me-1"></i> Parents
+                                 </a>
+                             </li>
+                         {% elif user.parent_profile %}
+                             <!-- Parent Navigation -->
+                             <li class="nav-item">
+                                 <a class="nav-link {% if request.resolver_match.url_name == 'parent_dashboard' %}active{% endif %}" href="{% url 'parent_dashboard' %}">
+                                     <i class="bi bi-heart-fill me-1"></i> Parent Dashboard
+                                 </a>
+                             </li>
+                         {% else %}
+                             <!-- Student Navigation (Personal Portal only) -->
+                             <li class="nav-item">
+                                 <a class="nav-link active" href="{% url 'student_dashboard' %}">
+                                     <i class="bi bi-mortarboard me-1"></i> My Dashboard
+                                 </a>
+                             </li>
+                         {% endif %}
+                     {% endif %}
                 </ul>
 
                 <div class="d-flex align-items-center gap-2">
-                    {% if user.is_authenticated %}
-                        {% if user.is_staff or user.is_superuser %}
-                            <form action="{% url 'student_list' %}" method="get" class="d-flex me-2">
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="q" class="form-control" placeholder="Search student..." value="{{ request.GET.q }}">
-                                    <button class="btn btn-outline-light" type="submit">
-                                        <i class="bi bi-search"></i>
-                                    </button>
-                                </div>
-                            </form>
-                            <a href="{% url 'student_create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm me-2">
-                                <i class="bi bi-person-plus-fill"></i>
-                                <span>Add Student</span>
-                            </a>
-                            <span class="badge bg-secondary-subtle text-light border px-2 py-1 me-2 small">
-                                <i class="bi bi-shield-lock-fill text-warning me-1"></i> Staff
-                            </span>
-                        {% else %}
-                            <span class="badge bg-primary-subtle text-primary border px-3 py-2 me-2">
-                                <i class="bi bi-person-badge-fill me-1"></i> {{ user.student_profile.roll_number|default:user.username }}
-                            </span>
-                        {% endif %}
-                        <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span>Logout</span>
-                        </a>
-                    {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-3">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                        </a>
-                    {% endif %}
-                </div>
+                     {% if user.is_authenticated %}
+                         {% if user.is_staff or user.is_superuser %}
+                             <form action="{% url 'student_list' %}" method="get" class="d-flex me-2">
+                                 <div class="input-group input-group-sm">
+                                     <input type="text" name="q" class="form-control" placeholder="Search student..." value="{{ request.GET.q }}">
+                                     <button class="btn btn-outline-light" type="submit">
+                                         <i class="bi bi-search"></i>
+                                     </button>
+                                 </div>
+                             </form>
+                             <a href="{% url 'student_create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm me-2">
+                                 <i class="bi bi-person-plus-fill"></i>
+                                 <span>Add Student</span>
+                             </a>
+                             <span class="badge bg-secondary-subtle text-light border px-2 py-1 me-2 small">
+                                 <i class="bi bi-shield-lock-fill text-warning me-1"></i> Staff
+                             </span>
+                         {% elif user.parent_profile %}
+                             <span class="badge bg-warning-subtle text-dark border px-3 py-2 me-2">
+                                 <i class="bi bi-heart-fill me-1"></i> Parent
+                             </span>
+                         {% else %}
+                             <span class="badge bg-primary-subtle text-primary border px-3 py-2 me-2">
+                                 <i class="bi bi-person-badge-fill me-1"></i> {{ user.student_profile.roll_number|default:user.username }}
+                             </span>
+                         {% endif %}
+                         <a href="{% if user.parent_profile %}{% url 'parent_logout' %}{% else %}{% url 'logout' %}{% endif %}" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                             <i class="bi bi-box-arrow-right"></i>
+                             <span>Logout</span>
+                         </a>
+                     {% else %}
+                         <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1">
+                             <i class="bi bi-box-arrow-in-right me-1"></i>
+                             <span>Staff Login</span>
+                         </a>
+                         <a href="{% url 'parent_login' %}" class="btn btn-warning btn-sm px-3 d-flex align-items-center gap-1">
+                             <i class="bi bi-heart-fill me-1"></i>
+                             <span>Parent Login</span>
+                         </a>
+                     {% endif %}
+                 </div>
             </div>
         </div>
     </nav>

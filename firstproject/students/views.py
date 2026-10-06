@@ -40,6 +40,8 @@ def dashboard_router(request):
     """
     if not request.user.is_authenticated:
         return redirect('login')
+    if hasattr(request.user, 'parent_profile'):
+        return redirect('parent_dashboard')
     if hasattr(request.user, 'student_profile') and not request.user.is_staff:
         return redirect('student_dashboard')
     return redirect('dashboard')

@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import date
 from students.models import Course, Student
+from parents.models import Parent, Attendance
+from random import Random
 
 
 class Command(BaseCommand):
@@ -213,6 +215,87 @@ class Command(BaseCommand):
                 self.stdout.write(f"Created Student: {student.roll_number} - {student.full_name} (User: {username})")
             else:
                 self.stdout.write(f"Linked Student: {student.roll_number} -> User: {username}")
+
+        parents_data = [
+            {
+                "username": "parent_arjun",
+                "first_name": "Arjun",
+                "last_name": "Sharma",
+                "email": "arjun.sharma@example.com",
+                "phone": "+91 98765 43210",
+                "children_rolls": ["STU2024001"],
+            },
+            {
+                "username": "parent_priya",
+                "first_name": "Meera",
+                "last_name": "Nair",
+                "email": "meera.nair@example.com",
+                "phone": "+91 98765 43211",
+                "children_rolls": ["STU2024002"],
+            },
+            {
+                "username": "parent_rohan",
+                "first_name": "Vijay",
+                "last_name": "Verma",
+                "email": "vijay.verma@example.com",
+                "phone": "+91 98765 43212",
+                "children_rolls": ["STU2024003", "STU2024004"],
+            },
+        ]
+
+        for p in parents_data:
+            p_user, p_created = User.objects.get_or_create(
+                username=p["username"],
+                defaults={
+                    "email": p["email"],
+                    "first_name": p["first_name"],
+                    "last_name": p["last_name"],
+                }
+            )
+            p_user.set_password("parent123")
+            p_user.save()
+
+            parent, p_created = Parent.objects.get_or_create(
+                user=p_user,
+                defaults={"phone": p["phone"]}
+            )
+            parent.phone = p["phone"]
+            parent.save()
+
+            for roll in p["children_rolls"]:
+                try:
+                    child = Student.objects.get(roll_number=roll)
+                    parent.children.add(child)
+                except Student.DoesNotExist:
+                    pass
+
+            if p_created:
+                self.stdout.write(f"Created Parent: {parent.full_name} / {p['username']} (password: parent123)")
+            else:
+                self.stdout.write(f"Linked Parent: {parent.full_name}")
+
+        rng = Random(42)
+        attendance_date = timezone.now().date()
+        for student in Student.objects.filter(user__isnull=False):
+            days_back = 0
+            for _ in range(20):
+                d = attendance_date - timezone.timedelta(days=days_back)
+                days_back += 1
+                if Attendance.objects.filter(student=student, date=d).exists():
+                    continue
+                roll = rng.random()
+                if roll < 0.82:
+                    status = Attendance.STATUS_PRESENT
+                elif roll < 0.92:
+                    status = Attendance.STATUS_LATE
+                else:
+                    status = Attendance.STATUS_ABSENT
+                Attendance.objects.create(
+                    student=student,
+                    date=d,
+                    status=status,
+                    remarks="" if status == Attendance.STATUS_PRESENT else "Sample remark"
+                )
 
         self.stdout.write(self.style.SUCCESS("Successfully seeded sample data and student login accounts!"))
 

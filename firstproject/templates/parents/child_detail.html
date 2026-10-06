@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.full_name }} - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'parent_dashboard' %}" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Student Profile Card -->
+    <div class="col-lg-3">
+        <div class="card card-custom text-center p-4">
+            <div class="mx-auto mb-3" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold;">
+                {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+            </div>
+            <h4 class="fw-bold mb-1">{{ student.full_name }}</h4>
+            <div class="text-muted small mb-2">{{ student.roll_number }}</div>
+            <div class="mb-3">
+                <span class="badge {{ student.status_badge_class }} badge-status px-3 py-2 fs-6">
+                    {{ student.status }}
+                </span>
+            </div>
+            {% if student.course %}
+            <div class="text-start">
+                <label class="text-muted small text-uppercase fw-semibold">Program</label>
+                <p class="fw-semibold mb-0">{{ student.course.code }} - {{ student.course.name }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Statistics, Attendance, Performance -->
+    <div class="col-lg-9">
+        <!-- Academic Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom p-3 h-100">
+                    <span class="text-muted small text-uppercase fw-semibold">Current GPA</span>
+                    <h3 class="fw-bold text-primary mb-0">{{ student.gpa }} <span class="text-muted small">/ {{ student.gpa_scale_max }}</span></h3>
+                    <div class="mt-1 small {% if gpa_difference >= 0 %}text-success{% else %}text-warning{% endif %}">
+                        <i class="bi bi-chevron-up me-1"></i> {{ gpa_difference }} vs class avg
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom p-3 h-100">
+                    <span class="text-muted small text-uppercase fw-semibold">Academic Standing</span>
+                    <h5 class="fw-bold mb-0 text-info">{{ student.academic_standing }}</h5>
+                    <div class="mt-1 small text-muted">{{ student.expected_graduation_year|default:"N/A" }} graduation target</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom p-3 h-100">
+                    <span class="text-muted small text-uppercase fw-semibold">Degree Progress</span>
+                    <h5 class="fw-bold mb-0 text-success">{{ student.degree_progress_percentage }}%</h5>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: {{ student.degree_progress_percentage }}%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom p-3 h-100">
+                    <span class="text-muted small text-uppercase fw-semibold">Attendance Rate</span>
+                    <h5 class="fw-bold mb-0 {% if attendance_rate >= 75 %}text-success{% elif attendance_rate >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ attendance_rate }}%
+                    </h5>
+                    <div class="mt-1 small text-muted">{{ present_count }}P / {{ absent_count }}A / {{ late_count }}L</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="card-title fw-bold mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-clipboard-data me-1"></i> Attendance Record (Last 30 Days)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_attendance %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                {% if recent_attendance.first.remarks %}<th>Remarks</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in recent_attendance %}
+                            <tr>
+                                <td>{{ att.date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge {{ att.status_badge_class }} badge-status">{{ att.get_status_display }}</span>
+                                </td>
+                                {% if att.remarks %}<td>{{ att.remarks|truncatechars:50 }}</td>{% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-journal-x fs-2 d-block mb-2"></i>
+                    No attendance records available for the last 30 days.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-mortarboard me-1"></i> Academic Summary
+                    </h5>
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted py-2">Program / Course:</td>
+                                <td class="fw-bold py-2">
+                                    {% if student.course %}
+                                        {{ student.course.name }} ({{ student.course.code }})
+                                    {% else %}
+                                        <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Enrollment Date:</td>
+                                <td class="py-2">{{ student.enrollment_date|date:"F d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Enrollment Status:</td>
+                                <td class="py-2">
+                                    <span class="badge {{ student.status_badge_class }} badge-status">{{ student.status }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Class Size:</td>
+                                <td class="py-2">{{ course_student_count }} students</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Class Average GPA:</td>
+                                <td class="py-2 fw-bold">{{ course_avg_gpa }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-person-lines-fill"></i> Contact Information
+                    </h5>
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted py-2">Email:</td>
+                                <td class="py-2"><a href="mailto:{{ student.email }}" class="fw-bold text-decoration-none">{{ student.email }}</a></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Phone:</td>
+                                <td class="py-2">{{ student.phone|default:"<span class='text-muted'>Not provided</span>"|safe }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Date of Birth:</td>
+                                <td class="py-2">{{ student.date_of_birth|date:"F d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Parent/Guardian:</td>
+                                <td class="py-2 fw-bold">{{ parent.full_name }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
